@@ -1,8 +1,8 @@
-# Member C - API health increment
+# Member C - API health and CORS increments
 
 This branch adds only `GET /health` from C01, using final-SRS EI-SW-1 and
 safe errors from NFR-SEC-7. Existing team CI, migrations, tests and research
-notes are reused. The earlier `raghu/project-setup` branch remains separate.
+notes are reused. Health PR #9 is the base for the separate CORS increment.
 
 ## Install and run
 
@@ -12,6 +12,7 @@ Use Python 3.11. From the repository root:
 py -3.11 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e "./backend[dev]"
 $env:DATABASE_PATH = "C:\path\to\existing\ledger.sqlite3"
+$env:FRONTEND_ORIGIN = "http://localhost:5173"
 .\.venv\Scripts\python.exe -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000
 ```
 
@@ -52,3 +53,24 @@ $env:PYTHONPATH = "backend"
 ```
 
 No financial endpoints are implemented. This system is for simulated funds only.
+
+## Frontend origin (C01 / EI-CM-1)
+
+`FRONTEND_ORIGIN` allows exactly one frontend origin: scheme, hostname, and port.
+It defaults to `http://localhost:5173` for local Vite development. Set it to the
+frontend's actual origin before starting the API. Do not include a trailing
+slash, path, query, credentials, a comma-separated list, `null`, or a wildcard;
+invalid configuration fails at application creation.
+
+The API enables CORS for GET and POST with the documented Authorization,
+Content-Type, Idempotency-Key, X-Admin-Key and X-Request-ID request headers.
+Browser JavaScript can read Idempotent-Replayed and X-Request-ID response
+headers when the corresponding features produce them. This increment does
+not implement replay or request-ID generation.
+
+Allowed origins receive an explicit Access-Control-Allow-Origin header;
+other origins receive no such browser-access permission. Disallowed preflight
+origins, methods and headers receive HTTP 400. Non-browser requests without an
+Origin header continue to work. Cookie credentials are not enabled; frontend
+authentication will use the documented bearer header. CORS does not replace
+the later authentication and ownership checks.

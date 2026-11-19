@@ -11,8 +11,8 @@ source: "Final SRS section 6.3"
 # Active project records
 
 - [[2026-11-19-c01-health]] - C01 health behavior, tests and session evidence.
+- [[2026-11-19-c01-cors]] - configured frontend origin, preflight and browser-access checks.
 - [[sqlite-read-only-transaction-snapshots]] - existing team SQLite reference.
 
-The separate earlier setup branch contains the proposed full PARA index and
-delivery plan. This feature branch adds its own progress note to the existing
-team brain without copying that entire setup branch.
+Each feature increment adds a progress note to the existing team brain. The
+obsolete setup branch was removed; A still owns the full vault/ingest work.

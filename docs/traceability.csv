@@ -1,4 +1,5 @@
 requirement_id,work_package,status,issue,pr,test,skill,brain_note
-EI-SW-1,C01,health-implemented-HTTP-CI-pending,write-access-blocked,write-access-blocked,backend/tests/test_api_health.py,local-check-pending-D,brain/projects/2026-11-19-c01-health.md
-NFR-SEC-7,C01,health-errors-HTTP-CI-pending,write-access-blocked,write-access-blocked,backend/tests/test_api_health.py,local-check-pending-D,brain/projects/2026-11-19-c01-health.md
-SE-6,C01,health-readiness-interface-only,pending,pending,backend/tests/test_sqlite_readiness.py,not-applicable,brain/projects/2026-11-19-c01-health.md
+EI-SW-1,C01,health-CI-passed-review-pending,,https://github.com/harshith-raj-06/Financial-Ledger-Digital-Wallet-API/pull/9,backend/tests/test_api_health.py,local-check-pending-D,brain/projects/2026-11-19-c01-health.md
+NFR-SEC-7,C01,health-errors-CI-passed-review-pending,,https://github.com/harshith-raj-06/Financial-Ledger-Digital-Wallet-API/pull/9,backend/tests/test_api_health.py,local-check-pending-D,brain/projects/2026-11-19-c01-health.md
+SE-6,C01,health-readiness-interface-only,,https://github.com/harshith-raj-06/Financial-Ledger-Digital-Wallet-API/pull/9,backend/tests/test_sqlite_readiness.py,not-applicable,brain/projects/2026-11-19-c01-health.md
+EI-CM-1,C01,cors-CI-passed-review-pending,,https://github.com/harshith-raj-06/Financial-Ledger-Digital-Wallet-API/pull/10,backend/tests/test_api_cors.py,not-applicable,brain/projects/2026-11-19-c01-cors.md

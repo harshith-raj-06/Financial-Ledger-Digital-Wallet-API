@@ -1,15 +1,45 @@
-"""Member C API application factory; this increment adds health only."""
+"""Member C API factory with read-only health and frontend-origin policy."""
 
 import os
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from .api.health import router as health_router
 from .health import DatabaseReadiness, SqliteReadiness
 
 
-def create_app(*, readiness: DatabaseReadiness | None = None) -> FastAPI:
+def _validate_frontend_origin(value: str) -> str:
+    """Require one explicit HTTP origin instead of accepting wildcard access."""
+    message = "FRONTEND_ORIGIN must be one HTTP(S) origin, without a path or credentials."
+    try:
+        parsed = urlsplit(value)
+        port = parsed.port
+    except ValueError as error:
+        raise ValueError(message) from error
+    if (
+        not value
+        or any(character.isspace() for character in value)
+        or "*" in value
+        or "," in value
+        or parsed.scheme not in {"http", "https"}
+        or not parsed.hostname
+        or parsed.username is not None
+        or parsed.password is not None
+        or parsed.path
+        or parsed.query
+        or parsed.fragment
+        or port == 0
+    ):
+        raise ValueError(message)
+    return value
+
+
+def create_app(
+    *, readiness: DatabaseReadiness | None = None, frontend_origin: str | None = None
+) -> FastAPI:
     """Compose the API without creating a database or bootstrapping other features."""
     application = FastAPI(
         title="Financial Ledger & Digital Wallet API",
@@ -20,6 +50,25 @@ def create_app(*, readiness: DatabaseReadiness | None = None) -> FastAPI:
         readiness
         if readiness is not None
         else SqliteReadiness(Path(os.environ.get("DATABASE_PATH", "data/ledger.sqlite3")))
+    )
+    origin = _validate_frontend_origin(
+        frontend_origin
+        if frontend_origin is not None
+        else os.environ.get("FRONTEND_ORIGIN", "http://localhost:5173")
+    )
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=[origin],
+        allow_credentials=False,
+        allow_methods=["GET", "POST"],
+        allow_headers=[
+            "Authorization",
+            "Content-Type",
+            "Idempotency-Key",
+            "X-Admin-Key",
+            "X-Request-ID",
+        ],
+        expose_headers=["Idempotent-Replayed", "X-Request-ID"],
     )
     application.include_router(health_router)
     return application
