@@ -93,8 +93,8 @@ def test_sqlite_busy_uses_the_documented_error():
     }
 
 
-def test_this_increment_exposes_only_health_in_the_product_schema():
+def test_product_schema_exposes_health_and_admin_reconcile_only():
     paths = create_app().openapi()["paths"]
-    assert set(paths) == {"/health"}
+    assert set(paths) == {"/health", "/admin/reconcile"}
     assert "get" in paths["/health"]
     assert not paths["/health"]["get"].get("security")

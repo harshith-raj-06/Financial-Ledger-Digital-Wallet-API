@@ -2,3 +2,8 @@ requirement_id,work_package,status,issue,pr,test,skill,brain_note
 EI-SW-1,C01,health-implemented-HTTP-CI-pending,write-access-blocked,write-access-blocked,backend/tests/test_api_health.py,local-check-pending-D,brain/projects/2026-11-19-c01-health.md
 NFR-SEC-7,C01,health-errors-HTTP-CI-pending,write-access-blocked,write-access-blocked,backend/tests/test_api_health.py,local-check-pending-D,brain/projects/2026-11-19-c01-health.md
 SE-6,C01,health-readiness-interface-only,pending,pending,backend/tests/test_sqlite_readiness.py,not-applicable,brain/projects/2026-11-19-c01-health.md
+FR-5.1,D03,implemented-pending-review,pending,pending,backend/tests/test_api_admin.py,not-applicable,brain/projects/2026-11-20-d03-reconciliation.md
+FR-5.2,D03,implemented-pending-review,pending,pending,backend/tests/test_reconciliation.py,not-applicable,brain/projects/2026-11-20-d03-reconciliation.md
+FR-5.3,D03,implemented-pending-review,pending,pending,backend/tests/test_api_admin.py,not-applicable,brain/projects/2026-11-20-d03-reconciliation.md
+FR-5.4,D03,implemented-pending-review,pending,pending,backend/tests/test_reconciliation.py,not-applicable,brain/projects/2026-11-20-d03-reconciliation.md
+NFR-SEC-2,D03,admin-key-check-implemented-pending-review,pending,pending,backend/tests/test_api_admin.py,not-applicable,brain/projects/2026-11-20-d03-reconciliation.md
