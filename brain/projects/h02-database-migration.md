@@ -3,7 +3,7 @@ title: H02 Database Migration
 type: project
 created: 2026-11-19
 date: "2026-11-20"
-author: "Harshith (Member A), AI-assisted"
+author: "Harshith (Member A)"
 category: projects
 owner: Harshith (Member A)
 requirements: [DB-1, DB-2, DB-3, DB-4, DB-5, DB-6, FR-1.8, FR-4.3]
@@ -11,7 +11,7 @@ tags: [h02, sqlite]
 source: "Final SRS section 6.2 and Figure B-2; H02 schema and runner commits"
 ---
 
-# H02 Database Migration
+# H02 Database Migration (AI-assisted)
 
 Commit `3d7ecb0` adds Migration 001 with the six tables in SRS Figure B-2. Commit `0c9ac34` adds the runner and real-schema tests. [SRS §6.2](../../SRS.pdf#page=10) · [Schema SQL](../../db/migrations/001_initial_schema.sql) · [Schema commit](https://github.com/harshith-raj-06/SE-Project/commit/3d7ecb03b4260524189d971206e677be4f1e4826) · [Runner commit](https://github.com/harshith-raj-06/SE-Project/commit/0c9ac343b158bc218206103404c5b8d2f588c662)
 
@@ -43,4 +43,4 @@ The CLI check recorded versions 1 and 2 once each, found six application tables,
 
 The feature branch is available for H02 review. [Compare with main](https://github.com/harshith-raj-06/SE-Project/compare/main...feat/database-schema-001)
 
-Related notes [[resources/sqlite-schema-constraints|schema constraints]], [[resources/sqlite-migration-transactions|migration transactions]], and [[archive/2026-11-18-h02-ai-session|AI session]].
+Related notes [[resources/sqlite-schema-constraints|schema constraints]] and [[resources/sqlite-migration-transactions|migration transactions]].

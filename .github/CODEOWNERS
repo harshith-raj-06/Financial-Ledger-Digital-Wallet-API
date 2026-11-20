@@ -1,0 +1,36 @@
+# Shared setup and Member A's database and wallet code
+/.github/ @harshith-raj-06
+/AGENTS.md @harshith-raj-06
+/.env.example @harshith-raj-06
+/db/ @harshith-raj-06
+/backend/app/database.py @harshith-raj-06
+/backend/app/auth/ @harshith-raj-06
+/backend/app/api/users.py @harshith-raj-06
+/backend/app/api/wallets.py @harshith-raj-06
+/tests/test_initial_schema.py @harshith-raj-06
+/tests/test_migrations.py @harshith-raj-06
+/backend/tests/test_database.py @harshith-raj-06
+
+# API shell, contracts, posting and history
+/backend/app/main.py @KiritoReborn
+/backend/app/health.py @KiritoReborn
+/backend/app/api/health.py @KiritoReborn
+/backend/app/contracts/ @KiritoReborn
+/backend/app/services/posting.py @KiritoReborn
+/backend/app/services/history.py @KiritoReborn
+/docs/api/ @KiritoReborn
+/docs/traceability.csv @KiritoReborn
+/.github/workflows/raghu-api.yml @KiritoReborn
+
+# Idempotency, transfers and deposits
+/backend/app/services/idempotency.py @pranavsai0
+/backend/app/services/transfers.py @pranavsai0
+/backend/app/api/transfers.py @pranavsai0
+/backend/app/api/deposit.py @pranavsai0
+
+# Immutability, reversal and reconciliation
+/db/migrations/002_* @BlackLotusX09
+/tests/test_immutability_triggers.py @BlackLotusX09
+/backend/app/services/reversal.py @BlackLotusX09
+/backend/app/services/reconciliation.py @BlackLotusX09
+/backend/app/api/admin.py @BlackLotusX09

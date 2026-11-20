@@ -1,8 +1,6 @@
-# Member C - API health increment
+# Backend setup and database transactions
 
-This branch adds only `GET /health` from C01, using final-SRS EI-SW-1 and
-safe errors from NFR-SEC-7. Existing team CI, migrations, tests and research
-notes are reused. The earlier `raghu/project-setup` branch remains separate.
+The API currently exposes `GET /health`. SQLite initialization runs during application startup.
 
 ## Install and run
 
@@ -11,24 +9,17 @@ Use Python 3.11. From the repository root:
 ```powershell
 py -3.11 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e "./backend[dev]"
-$env:DATABASE_PATH = "C:\path\to\existing\ledger.sqlite3"
+$env:DATABASE_PATH = "C:\path\to\ledger.sqlite3"
 .\.venv\Scripts\python.exe -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000
 ```
 
-`DATABASE_PATH` defaults to `data/ledger.sqlite3`. The database must already
-exist. A owns its migration runner and initialization; the health endpoint does
-not create a database, parent directories, tables, users or wallets.
+`DATABASE_PATH` defaults to `data/ledger.sqlite3`. On first startup, the app creates the parent directory, enables WAL and applies the numbered migrations. On restart it preserves recorded versions. An unreadable or corrupt database stops startup. The backend package includes the SQL and runner through the `backend/db` link to the shared migration directory. Windows developers building from a Git checkout need a checkout with symbolic links enabled, or can install the built wheel.
 
-`GET http://127.0.0.1:8000/health` needs no token or idempotency key.
-A readable database returns `200 {"status":"ok"}`. An unreadable/corrupt file
-gives a generic `500 INTERNAL_ERROR`; a SQLite busy condition gives the SRS
-`503 DATABASE_BUSY` envelope. Error responses omit paths, SQL and exception text.
+`GET /health` reads the SQLite catalog in one read-only transaction. After startup an unreadable database yields a sanitized 500 response, and an expired SQLite busy timeout yields 503.
 
-The readiness adapter opens one read-only connection, reads the SQLite catalog,
-and closes it. It does not alter the database's journal mode or initialize the
-shared financial connection provider. A's WAL/FULL/foreign-key provider integration
-and the rest of C01 remain separate work. Reading the catalog detects an invalid
-SQLite file; merely executing `SELECT 1` would not establish that.
+## Financial request handlers
+
+In a synchronous request handler, open `with request.app.state.database.transaction() as conn:` once and pass `conn` to each service. The context reserves the write lock before yielding, commits on success, rolls back on an exception and closes the connection. For read-only handlers use `transaction(write=False)` to keep all reads on the same snapshot. Each connection uses foreign keys, FULL synchronization and a five-second busy timeout.
 
 ## Checks
 
@@ -37,18 +28,3 @@ SQLite file; merely executing `SELECT 1` would not establish that.
 .\.venv\Scripts\python.exe -m ruff check backend
 .\.venv\Scripts\python.exe -m build backend --outdir .venv/dist
 ```
-
-The additive `Raghu API checks` workflow installs this component and runs its
-HTTP tests on Python 3.11. The existing team workflow is unchanged. Component
-tests skip when the API is not installed, so the original dependency-light test
-job can keep running; the dedicated API job installs the component and runs all
-of these checks. Local validation limits are recorded in the C01 brain note.
-
-For the dependency-free SQLite tests on Python 3.11:
-
-```powershell
-$env:PYTHONPATH = "backend"
-.\.venv\Scripts\python.exe -m unittest discover -s backend/tests -p test_sqlite_readiness.py -v
-```
-
-No financial endpoints are implemented. This system is for simulated funds only.

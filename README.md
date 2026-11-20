@@ -16,32 +16,23 @@
 
 ## Setup & Run (about 10 minutes) — DI-1
 
-Prerequisites: Python 3.11+, Git, and (for the frontend) Node.js 18+. No external services are needed: one process, one machine, one SQLite file.
+From a clean clone, run these commands in Bash with Python 3.11 and Git installed.
 
 ```bash
-# 1. Clone and enter the repository
 git clone https://github.com/harshith-raj-06/Financial-Ledger-Digital-Wallet-API.git
 cd Financial-Ledger-Digital-Wallet-API
-
-# 2. Create a virtual environment and install tooling
-python3 -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate
-pip install ruff pytest
-
-# 3. Configure secrets (never commit real values)
+python -m pip install -e "./backend[dev]"
 cp .env.example .env
-export ADMIN_TOKEN="choose-a-demo-token"
-export ADMIN_KEY="choose-a-demo-admin-key"   # the app must refuse to start if either is empty (FR-1.9)
-
-# 4. Apply database migrations in order (db/migrations/*.sql) to the SQLite file
-#    e.g. sqlite3 ledger.db < db/migrations/002_immutability_triggers.sql
-
-# 5. Verify the install: lint and tests (same checks as CI)
-ruff check .
-pytest
+# Edit .env to supply your own admin credentials.
+set -a
+source .env
+set +a
+python -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port "$PORT"
 ```
 
-> **Note:** The API server and React frontend start commands will be added here once those modules are merged. Until then, steps 1–5 are the verified setup.
+Startup creates the database at `DATABASE_PATH` and applies pending migrations. From a second terminal, run `curl http://127.0.0.1:8000/health` (adjust the port if changed). A healthy database returns `{"status":"ok"}`. To run the local checks, activate the same environment and run `ruff check .` and `python -m pytest -q backend/tests tests`.
 
 ## Important Notices
 
