@@ -1,85 +1,37 @@
 import sqlite3
-from pathlib import Path
+from contextlib import closing
 
 import pytest
 
-MIGRATION_002_PATH = (
-    Path(__file__).resolve().parent.parent
-    / "db"
-    / "migrations"
-    / "002_immutability_triggers.sql"
-)
+from db.migrate import apply_migrations
 
 
 @pytest.fixture
-def db_conn():
-    conn = sqlite3.connect(":memory:")
-    conn.execute("PRAGMA foreign_keys = ON;")
+def db_conn(tmp_path):
+    with closing(sqlite3.connect(tmp_path / "immutability.sqlite3")) as conn:
+        apply_migrations(conn)
+        conn.executescript(
+            """
+            INSERT INTO users (id, name, email, token_hash, created_at)
+            VALUES ('user-1', 'Wallet Owner', 'owner@example.test', 'test-hash',
+                    '2026-11-17T00:00:00Z');
 
-    # Minimal schema matching SRS Figure B-2 for testing FR-4.1 triggers
-    conn.executescript(
-        """
-        CREATE TABLE users (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL UNIQUE,
-            token_hash TEXT NOT NULL UNIQUE,
-            created_at TEXT NOT NULL
-        );
+            INSERT INTO wallets (id, user_id, currency, balance_minor, is_system, created_at)
+            VALUES
+                ('w-sys-inr', NULL, 'INR', -5000, 1, '2026-11-17T00:00:00Z'),
+                ('w-usr-inr', 'user-1', 'INR', 5000, 0, '2026-11-17T00:00:00Z');
 
-        CREATE TABLE wallets (
-            id TEXT PRIMARY KEY,
-            user_id TEXT REFERENCES users(id),
-            currency TEXT NOT NULL,
-            balance_minor INTEGER NOT NULL,
-            is_system INTEGER NOT NULL,
-            created_at TEXT NOT NULL
-        );
+            INSERT INTO transactions (id, type, reverses_txn_id, description, created_at)
+            VALUES ('txn-001', 'DEPOSIT', NULL, 'Initial seed deposit', '2026-11-17T00:00:00Z');
 
-        CREATE TABLE transactions (
-            id TEXT PRIMARY KEY,
-            type TEXT NOT NULL,
-            reverses_txn_id TEXT UNIQUE REFERENCES transactions(id),
-            description TEXT,
-            created_at TEXT NOT NULL
-        );
-
-        CREATE TABLE ledger_entries (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            txn_id TEXT NOT NULL REFERENCES transactions(id),
-            wallet_id TEXT NOT NULL REFERENCES wallets(id),
-            direction TEXT NOT NULL,
-            amount_minor INTEGER NOT NULL CHECK (amount_minor > 0),
-            currency TEXT NOT NULL,
-            created_at TEXT NOT NULL
-        );
-        """
-    )
-
-    # Apply Migration 002
-    migration_sql = MIGRATION_002_PATH.read_text(encoding="utf-8")
-    conn.executescript(migration_sql)
-
-    # Seed valid rows before testing immutability
-    conn.executescript(
-        """
-        INSERT INTO wallets (id, user_id, currency, balance_minor, is_system, created_at)
-        VALUES
-            ('w-sys-inr', NULL, 'INR', -5000, 1, '2026-11-17T00:00:00Z'),
-            ('w-usr-inr', NULL, 'INR', 5000, 1, '2026-11-17T00:00:00Z');
-
-        INSERT INTO transactions (id, type, reverses_txn_id, description, created_at)
-        VALUES ('txn-001', 'DEPOSIT', NULL, 'Initial seed deposit', '2026-11-17T00:00:00Z');
-
-        INSERT INTO ledger_entries (id, txn_id, wallet_id, direction, amount_minor, currency, created_at)
-        VALUES
-            (1, 'txn-001', 'w-sys-inr', 'DEBIT', 5000, 'INR', '2026-11-17T00:00:00Z'),
-            (2, 'txn-001', 'w-usr-inr', 'CREDIT', 5000, 'INR', '2026-11-17T00:00:00Z');
-        """
-    )
-    conn.commit()
-    yield conn
-    conn.close()
+            INSERT INTO ledger_entries
+                (id, txn_id, wallet_id, direction, amount_minor, currency, created_at)
+            VALUES
+                (1, 'txn-001', 'w-sys-inr', 'DEBIT', 5000, 'INR', '2026-11-17T00:00:00Z'),
+                (2, 'txn-001', 'w-usr-inr', 'CREDIT', 5000, 'INR', '2026-11-17T00:00:00Z');
+            """
+        )
+        yield conn
 
 
 def test_transactions_update_is_blocked(db_conn):
@@ -104,9 +56,7 @@ def test_transactions_delete_is_blocked(db_conn):
 
 def test_ledger_entries_update_is_blocked(db_conn):
     with pytest.raises(sqlite3.IntegrityError, match="FR-4.1 violation"):
-        db_conn.execute(
-            "UPDATE ledger_entries SET amount_minor = 999999 WHERE id = 2;"
-        )
+        db_conn.execute("UPDATE ledger_entries SET amount_minor = 999999 WHERE id = 2;")
 
     amount = db_conn.execute(
         "SELECT amount_minor FROM ledger_entries WHERE id = 2;"

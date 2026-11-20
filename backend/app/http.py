@@ -13,6 +13,8 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
+from .posting import PostingError
+
 MAX_BODY_BYTES = 16 * 1024
 request_logger = logging.getLogger("ledger.requests")
 request_logger.setLevel(logging.INFO)
@@ -41,6 +43,10 @@ class ApiError(Exception):
 
 
 def install_error_handlers(application: FastAPI) -> None:
+    async def posting_error(request: Request, error: PostingError):
+        status = {"NOT_FOUND": 404, "ALREADY_REVERSED": 409}.get(error.code, 422)
+        return error_response(status, error.code, error.message)
+
     async def expected_error(request: Request, error: ApiError):
         if error.status == 503 and error.code == "DATABASE_BUSY":
             return error_response(503, "DATABASE_BUSY", "Database is busy. Try again later.")
@@ -70,6 +76,7 @@ def install_error_handlers(application: FastAPI) -> None:
         return error_response(error.status_code, code, message, headers=error.headers)
 
     application.add_exception_handler(ApiError, expected_error)
+    application.add_exception_handler(PostingError, posting_error)
     application.add_exception_handler(RequestValidationError, validation_error)
     application.add_exception_handler(HTTPException, http_error)
 
