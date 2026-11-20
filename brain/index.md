@@ -16,6 +16,8 @@ Harshith's database work is recorded in [[projects/h02-database-migration|H02 da
 
 Current C increment: [[2026-11-19-c01-health]]. Actual runs: [[log]].
 
+Next independent review increment: [[2026-11-19-c01-cors]].
+
 Existing team reference notes:
 - [[sqlite-immutability-triggers]]
 - [[constant-time-secret-comparison]]
@@ -25,4 +27,4 @@ Existing team reference notes:
 
 This feature branch adds its own evidence to the existing team notes. Full vault
 organization and brain-ingest remain A's H06 responsibility. The earlier setup
-branch is retained as a reference and is not a prerequisite for this feature PR.
+branch was deleted; its earlier notes are recoverable through a local archive tag.
